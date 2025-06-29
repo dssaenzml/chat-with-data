@@ -1,0 +1,436 @@
+# =============================================================================
+# Chat with Data - .gitignore
+# =============================================================================
+
+# =============================================================================
+# SENSITIVE FILES & CREDENTIALS
+# =============================================================================
+# Environment files with API keys and secrets
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.test
+
+# API Keys and credentials
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# =============================================================================
+# PYTHON
+# =============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# =============================================================================
+# VIRTUAL ENVIRONMENTS
+# =============================================================================
+# Conda environments
+**/conda-meta/
+**/envs/
+
+# Python virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.env/
+
+# UV virtual environments
+.uv/
+uv.lock
+
+# Poetry
+poetry.lock
+
+# =============================================================================
+# DEVELOPMENT TOOLS & EDITORS
+# =============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Cursor AI
+.cursor/
+
+# =============================================================================
+# OPERATING SYSTEM
+# =============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# DOCKER & CONTAINERS
+# =============================================================================
+# Docker volumes and data
+docker-compose.override.yml
+.docker/
+volumes/
+data/
+
+# Container logs
+*.log
+
+# =============================================================================
+# DATABASES & DATA
+# =============================================================================
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# MongoDB data
+mongodb_data/
+mongo-data/
+
+# PostgreSQL data
+postgres_data/
+pgdata/
+
+# Redis data
+redis_data/
+dump.rdb
+
+# Qdrant data
+qdrant_data/
+qdrant_storage/
+
+# MinIO data
+minio_data/
+
+# Backup files
+*.backup
+*.bak
+*.sql
+*.dump
+
+# =============================================================================
+# UPLOADS & USER DATA
+# =============================================================================
+# File uploads
+uploads/
+upload/
+temp/
+tmp/
+user_data/
+files/
+
+# CSV/Excel/JSON uploads
+*.csv
+*.xlsx
+*.xls
+*.json
+*.parquet
+
+# Media files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.pdf
+*.mp4
+*.avi
+*.mov
+
+# =============================================================================
+# LOGS & MONITORING
+# =============================================================================
+# Application logs
+logs/
+*.log
+*.log.*
+log/
+
+# Monitoring data
+grafana_data/
+prometheus_data/
+
+# =============================================================================
+# BUILD & DEPLOYMENT
+# =============================================================================
+# Build artifacts
+build/
+dist/
+out/
+
+# Deployment files
+*.war
+*.ear
+*.rar
+*.tar
+*.zip
+*.gz
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Kubernetes
+*.kubeconfig
+
+# =============================================================================
+# AI/ML SPECIFIC
+# =============================================================================
+# Model files
+models/
+*.pkl
+*.model
+*.h5
+*.pb
+*.onnx
+
+# Training data
+training_data/
+datasets/
+
+# Weights and checkpoints
+checkpoints/
+weights/
+
+# TensorBoard logs
+runs/
+tb_logs/
+
+# =============================================================================
+# CACHE & TEMPORARY FILES
+# =============================================================================
+# Cache directories
+.cache/
+cache/
+.tmp/
+tmp/
+
+# Node.js (if using any JS tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Streamlit cache
+.streamlit/
+
+# FastAPI cache
+.fastapi_cache/
+
+# =============================================================================
+# SECURITY & ANALYSIS
+# =============================================================================
+# Security scan results
+.snyk
+
+# Static analysis
+.pylint.d/
+
+# Bandit security linting
+.bandit
+
+# =============================================================================
+# DOCUMENTATION BUILD
+# =============================================================================
+# Sphinx documentation
+docs/_build/
+_build/
+
+# =============================================================================
+# MISCELLANEOUS
+# =============================================================================
+# Backup files
+*~
+*.orig
+*.rej
+
+# Patch files
+*.patch
+*.diff
+
+# Archive files (unless intentionally included)
+*.7z
+*.dmg
+*.iso
+*.jar
+*.tar.gz
+*.tgz
+*.zip
+
+# Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Temporary files
+*.tmp
+*.temp
+*_temp
+*_tmp
+
+# Local configuration
+local_settings.py
+local_config.py
+
+# IDE workspace files
+workspace.xml
+tasks.xml
+
+# Test outputs
+test_output/
+test_results/
+coverage_html_report/ 
