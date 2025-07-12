@@ -2,8 +2,25 @@ from typing import Optional, Dict, Any
 import os
 from functools import wraps
 from langfuse import Langfuse
-from langfuse.decorators import observe, langfuse_context
+# Optional import for decorators - may not be available in all versions
+try:
+    from langfuse.decorators import observe, langfuse_context
+    LANGFUSE_DECORATORS_AVAILABLE = True
+except ImportError:
+    LANGFUSE_DECORATORS_AVAILABLE = False
+    # Create dummy decorators if not available
+    def observe(name=None):
+        def decorator(func):
+            return func
+        return decorator
+    
+    def langfuse_context():
+        def decorator(func):
+            return func
+        return decorator
+
 from config.settings import get_settings
+
 
 class LangfuseService:
     """Service for LLM observability and analytics with Langfuse"""
@@ -23,16 +40,29 @@ class LangfuseService:
             return False
             
         try:
+            # Suppress OpenTelemetry warnings about TracerProvider
+            import warnings
+            import logging
+            warnings.filterwarnings("ignore", message="Overriding of current TracerProvider is not allowed")
+            logging.getLogger("opentelemetry").setLevel(logging.ERROR)
+            
             langfuse_host = self.settings.get_langfuse_host()
-            self._client = Langfuse(
-                public_key=self.settings.langfuse_public_key,
-                secret_key=self.settings.langfuse_secret_key,
-                host=langfuse_host,
-                debug=self.settings.langfuse_debug,
-                flush_at=self.settings.langfuse_flush_at,
-                flush_interval=self.settings.langfuse_flush_interval,
-                max_retries=self.settings.langfuse_max_retries,
-            )
+            # Initialize Langfuse with only supported parameters
+            langfuse_kwargs = {
+                "public_key": self.settings.langfuse_public_key,
+                "secret_key": self.settings.langfuse_secret_key,
+                "host": langfuse_host,
+                "debug": self.settings.langfuse_debug,
+                "flush_at": self.settings.langfuse_flush_at,
+                "flush_interval": self.settings.langfuse_flush_interval,
+            }
+            
+            # Only add max_retries if it's supported (check version compatibility)
+            try:
+                self._client = Langfuse(**langfuse_kwargs, max_retries=self.settings.langfuse_max_retries)
+            except TypeError:
+                # If max_retries is not supported, initialize without it
+                self._client = Langfuse(**langfuse_kwargs)
             self._initialized = True
             print(f"✅ Langfuse initialized successfully - Host: {langfuse_host}")
             return True
@@ -137,12 +167,12 @@ def get_langfuse_service() -> LangfuseService:
 def langfuse_observe(name: Optional[str] = None):
     """Decorator to observe function calls with Langfuse"""
     def decorator(func):
-        # Only apply Langfuse decorator if enabled
+        # Only apply Langfuse decorator if enabled and available
         service = get_langfuse_service()
-        if service.settings.langfuse_enabled:
+        if service.settings.langfuse_enabled and LANGFUSE_DECORATORS_AVAILABLE:
             return observe(name=name or func.__name__)(func)
         else:
-            # Return original function if Langfuse is disabled
+            # Return original function if Langfuse is disabled or decorators unavailable
             return func
     return decorator
 

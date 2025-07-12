@@ -1,9 +1,8 @@
-import os
 import uuid
 import pandas as pd
 import json
 from fastapi import UploadFile
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import logging
 from datetime import datetime
 import aiofiles
@@ -14,6 +13,7 @@ from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
 
 class FileService:
     """Service for handling file uploads and data processing"""
@@ -395,4 +395,4 @@ class FileService:
     
     def get_file_info(self, file_id: str) -> Optional[Dict[str, Any]]:
         """Get file information"""
-        return self.processed_files.get(file_id) 
+        return self.processed_files.get(file_id)

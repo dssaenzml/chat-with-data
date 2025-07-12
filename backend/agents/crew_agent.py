@@ -17,10 +17,12 @@ from langchain_openai import ChatOpenAI
 
 from config.settings import get_settings
 from services.langfuse_service import get_langfuse_service, track_agent_execution, langfuse_observe
+from services.prompt_service import get_prompt_service
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
 langfuse_service = get_langfuse_service()
+
 
 class CrewDataAgent:
     """CrewAI agent for complex data analysis tasks"""
@@ -29,6 +31,7 @@ class CrewDataAgent:
         self.llm = None
         self.agents = {}
         self.crews = {}
+        self.prompt_service = get_prompt_service()
         self._initialize_llm()
         if CREWAI_AVAILABLE:
             self._create_agents()
@@ -52,58 +55,61 @@ class CrewDataAgent:
     def _create_agents(self):
         """Create specialized agents for different analysis tasks"""
         try:
-            # Data Analyst Agent
-            self.agents['data_analyst'] = Agent(
-                role='Senior Data Analyst',
-                goal='Analyze data to extract meaningful insights and patterns',
-                backstory="""You are a senior data analyst with extensive experience in 
-                statistical analysis, data mining, and business intelligence. You excel at 
-                identifying trends, anomalies, and actionable insights from complex datasets.""",
-                verbose=True,
-                allow_delegation=False,
-                llm=self.llm
-            )
+            # Get agent prompts from prompt service
+            agents_config = self.prompt_service.get_prompt_dict("crew_agent", "agents")
             
-            # Business Intelligence Specialist
-            self.agents['bi_specialist'] = Agent(
-                role='Business Intelligence Specialist',
-                goal='Translate data insights into business recommendations',
-                backstory="""You are a business intelligence specialist who bridges the gap 
-                between technical analysis and business strategy. You excel at creating 
-                actionable recommendations based on data insights.""",
-                verbose=True,
-                allow_delegation=False,
-                llm=self.llm
-            )
+            if not agents_config:
+                logger.warning("⚠️ No agent prompts found, using default prompts")
+                agents_config = self._get_default_agent_configs()
             
-            # Statistical Analyst
-            self.agents['statistician'] = Agent(
-                role='Statistical Analyst',
-                goal='Perform advanced statistical analysis and modeling',
-                backstory="""You are a statistical analyst with deep expertise in statistical 
-                methods, hypothesis testing, and predictive modeling. You provide rigorous 
-                statistical validation of data insights.""",
-                verbose=True,
-                allow_delegation=False,
-                llm=self.llm
-            )
+            # Create agents from prompts
+            for agent_key, agent_config in agents_config.items():
+                self.agents[agent_key] = Agent(
+                    role=agent_config.get('role', f'{agent_key.title()}'),
+                    goal=agent_config.get('goal', 'Analyze data effectively'),
+                    backstory=agent_config.get('backstory', f'You are a {agent_key.replace("_", " ")}.'),
+                    verbose=True,
+                    allow_delegation=False,
+                    llm=self.llm
+                )
             
-            # Data Visualization Expert
-            self.agents['viz_expert'] = Agent(
-                role='Data Visualization Expert',
-                goal='Create compelling and informative data visualizations',
-                backstory="""You are a data visualization expert who specializes in creating 
-                clear, compelling, and informative charts and graphs that effectively 
-                communicate data insights to various audiences.""",
-                verbose=True,
-                allow_delegation=False,
-                llm=self.llm
-            )
-            
-            logger.info("✅ CrewAI agents created successfully")
+            logger.info(f"✅ Created {len(self.agents)} CrewAI agents from prompts")
             
         except Exception as e:
             logger.error(f"❌ Failed to create CrewAI agents: {e}")
+    
+    def _get_default_agent_configs(self) -> Dict[str, Dict[str, str]]:
+        """Get default agent configurations if prompts are not available"""
+        return {
+            'data_analyst': {
+                'role': 'Senior Data Analyst',
+                'goal': 'Analyze data to extract meaningful insights and patterns',
+                'backstory': """You are a senior data analyst with extensive experience in 
+                statistical analysis, data mining, and business intelligence. You excel at 
+                identifying trends, anomalies, and actionable insights from complex datasets."""
+            },
+            'bi_specialist': {
+                'role': 'Business Intelligence Specialist',
+                'goal': 'Translate data insights into business recommendations',
+                'backstory': """You are a business intelligence specialist who bridges the gap 
+                between technical analysis and business strategy. You excel at creating 
+                actionable recommendations based on data insights."""
+            },
+            'statistician': {
+                'role': 'Statistical Analyst',
+                'goal': 'Perform advanced statistical analysis and modeling',
+                'backstory': """You are a statistical analyst with deep expertise in statistical 
+                methods, hypothesis testing, and predictive modeling. You provide rigorous 
+                statistical validation of data insights."""
+            },
+            'viz_expert': {
+                'role': 'Data Visualization Expert',
+                'goal': 'Create compelling and informative data visualizations',
+                'backstory': """You are a data visualization expert who specializes in creating 
+                clear, compelling, and informative charts and graphs that effectively 
+                communicate data insights to various audiences."""
+            }
+        }
     
     @langfuse_observe(name="crewai_analysis")
     async def analyze_with_crew(self, 
@@ -494,4 +500,4 @@ class CrewDataAgent:
             return {
                 "message": "Analysis completed with basic insights.",
                 "error": str(e)
-            } 
+            }

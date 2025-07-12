@@ -1,12 +1,17 @@
-import asyncio
 from qdrant_client import AsyncQdrantClient
-from qdrant_client.models import VectorParams, Distance, PointStruct, Filter, FieldCondition, MatchValue
+from qdrant_client.models import (
+    VectorParams,
+    Distance,
+    PointStruct,
+    Filter,
+    FieldCondition,
+    MatchValue,
+)
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Optional
 import logging
 import uuid
 from datetime import datetime
-import numpy as np
 
 from config.settings import get_settings
 
@@ -26,8 +31,11 @@ class VectorService:
     async def initialize(self):
         """Initialize Qdrant client and sentence transformer"""
         try:
-            # Initialize Qdrant client
-            self.client = AsyncQdrantClient(url=settings.qdrant_url)
+            # Initialize Qdrant client with version check disabled
+            self.client = AsyncQdrantClient(
+                url=settings.qdrant_url,
+                check_compatibility=False
+            )
             
             # Initialize sentence transformer for embeddings
             self.encoder = SentenceTransformer('all-MiniLM-L6-v2')
@@ -43,9 +51,10 @@ class VectorService:
             logger.info("✅ Qdrant connection established")
             
         except Exception as e:
-            logger.error(f"❌ Failed to connect to Qdrant: {e}")
+            logger.warning(f"⚠️ Qdrant connection failed: {e}")
+            logger.info("🔄 Running in development mode without Qdrant - vector search features disabled")
             self.is_connected = False
-            raise
+            # Don't raise the exception - allow the app to start without Qdrant
     
     async def close(self):
         """Close Qdrant connection"""
@@ -338,4 +347,4 @@ class VectorService:
             
         except Exception as e:
             logger.error(f"❌ Failed to clear collection: {e}")
-            return False 
+            return False

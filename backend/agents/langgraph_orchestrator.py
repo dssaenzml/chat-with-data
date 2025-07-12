@@ -20,9 +20,11 @@ from .crew_agent import CrewDataAgent
 from .sql_agent import SQLAgent
 
 from config.settings import get_settings
+from services.prompt_service import get_prompt_service
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
 
 class AnalysisState(TypedDict):
     """State for the analysis workflow"""
@@ -36,6 +38,7 @@ class AnalysisState(TypedDict):
     error: Optional[str]
     messages: List[Dict[str, Any]]
 
+
 class LangGraphOrchestrator:
     """LangGraph orchestrator for intelligent data analysis workflows"""
     
@@ -45,6 +48,7 @@ class LangGraphOrchestrator:
         self.sql_agent = SQLAgent()
         self.graph = None
         self.memory = MemorySaver()
+        self.prompt_service = get_prompt_service()
         self._initialize_llm()
         self._build_graph()
     
@@ -103,13 +107,16 @@ class LangGraphOrchestrator:
             query = state["query"]
             data_source = state["data_source"]
             
-            # Create intent analysis prompt
-            system_prompt = """You are an expert data analyst. Analyze the user's query and determine:
-            1. What type of analysis they want (descriptive, comparative, predictive, etc.)
-            2. What specific intent they have (summary, trend, correlation, etc.)
-            3. Whether they need SQL database queries or data file analysis
+            # Get intent analysis prompt from prompt service
+            system_prompt = self.prompt_service.get_prompt("langgraph", "intent_analysis", "system_prompt")
             
-            Return a structured analysis of their intent."""
+            if not system_prompt:
+                system_prompt = """You are an expert data analyst. Analyze the user's query and determine:
+                1. What type of analysis they want (descriptive, comparative, predictive, etc.)
+                2. What specific intent they have (summary, trend, correlation, etc.)
+                3. Whether they need SQL database queries or data file analysis
+                
+                Return a structured analysis of their intent."""
             
             if self.llm:
                 response = await self.llm.ainvoke([
@@ -252,19 +259,29 @@ class LangGraphOrchestrator:
             sql_result = state.get("sql_result")
             query = state["query"]
             
-            # Combine insights from both sources
-            synthesis_prompt = f"""
-            You are synthesizing analysis results to answer this query: "{query}"
+            # Get synthesis prompt from prompt service
+            synthesis_prompt_template = self.prompt_service.get_prompt("langgraph", "synthesis", "system_prompt")
             
-            CrewAI Analysis: {crew_result}
-            SQL Analysis: {sql_result}
-            
-            Provide a comprehensive synthesis that:
-            1. Combines insights from both analyses
-            2. Resolves any conflicts or contradictions
-            3. Highlights the most important findings
-            4. Provides actionable recommendations
-            """
+            if synthesis_prompt_template:
+                synthesis_prompt = synthesis_prompt_template.format(
+                    query=query,
+                    crew_result=crew_result,
+                    sql_result=sql_result
+                )
+            else:
+                # Fallback synthesis prompt
+                synthesis_prompt = f"""
+                You are synthesizing analysis results to answer this query: "{query}"
+                
+                CrewAI Analysis: {crew_result}
+                SQL Analysis: {sql_result}
+                
+                Provide a comprehensive synthesis that:
+                1. Combines insights from both analyses
+                2. Resolves any conflicts or contradictions
+                3. Highlights the most important findings
+                4. Provides actionable recommendations
+                """
             
             if self.llm and (crew_result or sql_result):
                 response = await self.llm.ainvoke([
@@ -437,4 +454,4 @@ class LangGraphOrchestrator:
         if state.get("sql_result"):
             sources.append("SQL Database Analysis")
         
-        return sources 
+        return sources

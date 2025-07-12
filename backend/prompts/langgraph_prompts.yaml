@@ -1,0 +1,196 @@
+# LangGraph Orchestrator System Prompts
+# These prompts define the workflow orchestration and analysis coordination
+
+intent_analysis:
+  system_prompt: |
+    You are an expert data analyst. Analyze the user's query and determine:
+    1. What type of analysis they want (descriptive, comparative, predictive, etc.)
+    2. What specific intent they have (summary, trend, correlation, etc.)
+    3. Whether they need SQL database queries or data file analysis
+    4. The complexity level of the analysis required
+    5. The best approach to answer their question
+    
+    Return a structured analysis of their intent in JSON format:
+    {
+      "analysis_type": "descriptive|comparative|predictive|correlation|trend",
+      "intent": "summary|exploration|comparison|prediction|insight",
+      "complexity": "simple|moderate|complex",
+      "approach": "sql_only|crew_only|both",
+      "confidence": 0.0-1.0
+    }
+
+  human_template: |
+    Query: {query}
+    Data source: {data_source_type}
+    
+    Analyze the intent and return structured response.
+
+routing_logic:
+  sql_indicators:
+    - "select"
+    - "from"
+    - "where"
+    - "join"
+    - "database"
+    - "table"
+    - "query"
+    - "sql"
+    - "schema"
+    - "column"
+
+  crew_indicators:
+    - "analyze"
+    - "compare"
+    - "trend"
+    - "insight"
+    - "recommend"
+    - "pattern"
+    - "correlation"
+    - "summary"
+    - "explore"
+    - "understand"
+
+  decision_rules:
+    sql_only:
+      condition: "Data source is database OR query contains SQL keywords"
+      confidence_threshold: 0.7
+    
+    crew_only:
+      condition: "Query is analytical OR exploratory in nature"
+      confidence_threshold: 0.6
+    
+    both:
+      condition: "Complex analysis requiring both SQL and analytical processing"
+      confidence_threshold: 0.8
+
+synthesis:
+  system_prompt: |
+    You are synthesizing analysis results to answer this query: "{query}"
+    
+    CrewAI Analysis: {crew_result}
+    SQL Analysis: {sql_result}
+    
+    Provide a comprehensive synthesis that:
+    1. Combines insights from both analyses
+    2. Resolves any conflicts or contradictions
+    3. Highlights the most important findings
+    4. Provides actionable recommendations
+    5. Identifies any gaps in the analysis
+    6. Suggests follow-up questions or analyses
+    
+    Structure your response as:
+    - Executive Summary
+    - Key Findings
+    - Detailed Analysis
+    - Recommendations
+    - Next Steps
+
+  confidence_calculation:
+    factors:
+      - "Data quality and completeness"
+      - "Analysis depth and rigor"
+      - "Result consistency"
+      - "Statistical significance"
+      - "Business relevance"
+    
+    weights:
+      data_quality: 0.25
+      analysis_depth: 0.25
+      consistency: 0.20
+      significance: 0.15
+      relevance: 0.15
+
+response_formatting:
+  system_prompt: |
+    You are formatting the final response for a data analysis query. 
+    Create a clear, structured response that includes:
+    
+    1. Direct answer to the user's question
+    2. Key insights and findings
+    3. Supporting data and evidence
+    4. Visualizations or charts (if applicable)
+    5. Recommendations or next steps
+    6. Confidence level in the analysis
+    
+    Make the response:
+    - Clear and concise
+    - Actionable
+    - Well-structured
+    - Appropriate for the user's technical level
+    - Professional yet accessible
+
+  output_structure:
+    answer: "Direct answer to the query"
+    insights: ["Key insight 1", "Key insight 2", ...]
+    data: "Supporting data or statistics"
+    visualizations: ["Chart type 1", "Chart type 2", ...]
+    recommendations: ["Recommendation 1", "Recommendation 2", ...]
+    confidence: 0.0-1.0
+    sources: ["Analysis method 1", "Analysis method 2", ...]
+
+workflow_states:
+  initial_state:
+    required_fields:
+      - query
+      - data_source
+      - analysis_type
+      - intent
+      - messages
+    
+  analysis_state:
+    required_fields:
+      - crew_result
+      - sql_result
+      - synthesis
+      - confidence
+    
+  final_state:
+    required_fields:
+      - final_response
+      - insights
+      - recommendations
+      - visualizations
+      - confidence
+
+error_handling:
+  intent_analysis_error:
+    fallback:
+      analysis_type: "general"
+      intent: "summary"
+      confidence: 0.5
+  
+  crew_analysis_error:
+    fallback: "Unable to perform CrewAI analysis. Proceeding with available data."
+  
+  sql_analysis_error:
+    fallback: "Unable to perform SQL analysis. Proceeding with available data."
+  
+  synthesis_error:
+    fallback: "Unable to synthesize results. Returning individual analyses."
+
+performance_metrics:
+  tracking_fields:
+    - "intent_analysis_time"
+    - "crew_analysis_time"
+    - "sql_analysis_time"
+    - "synthesis_time"
+    - "total_processing_time"
+    - "confidence_scores"
+    - "error_rates"
+    - "user_satisfaction"
+
+logging:
+  levels:
+    - "DEBUG: Detailed workflow steps"
+    - "INFO: Major workflow transitions"
+    - "WARNING: Potential issues or fallbacks"
+    - "ERROR: Workflow failures"
+  
+  structured_fields:
+    - "session_id"
+    - "query_hash"
+    - "analysis_type"
+    - "processing_time"
+    - "confidence_score"
+    - "error_type"
+    - "fallback_used" 

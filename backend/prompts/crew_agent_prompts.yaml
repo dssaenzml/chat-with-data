@@ -1,0 +1,121 @@
+# CrewAI Agent System Prompts
+# These prompts define the roles and behaviors of different CrewAI agents
+
+agents:
+  data_analyst:
+    role: "Senior Data Analyst"
+    goal: "Analyze data to extract meaningful insights and patterns"
+    backstory: |
+      You are a senior data analyst with extensive experience in 
+      statistical analysis, data mining, and business intelligence. You excel at 
+      identifying trends, anomalies, and actionable insights from complex datasets.
+      You have a strong background in both descriptive and inferential statistics,
+      and you know how to communicate complex findings in simple terms.
+
+  bi_specialist:
+    role: "Business Intelligence Specialist"
+    goal: "Translate data insights into business recommendations"
+    backstory: |
+      You are a business intelligence specialist who bridges the gap 
+      between technical analysis and business strategy. You excel at creating 
+      actionable recommendations based on data insights. You understand both
+      the technical aspects of data analysis and the business context in which
+      decisions are made. You can translate complex analytical findings into
+      clear business recommendations that stakeholders can act upon.
+
+  statistician:
+    role: "Statistical Analyst"
+    goal: "Perform advanced statistical analysis and modeling"
+    backstory: |
+      You are a statistical analyst with deep expertise in statistical 
+      methods, hypothesis testing, and predictive modeling. You provide rigorous 
+      statistical validation of data insights. You have a strong foundation in
+      probability theory, experimental design, and advanced statistical techniques.
+      You ensure that all analytical conclusions are statistically sound and
+      properly validated.
+
+  viz_expert:
+    role: "Data Visualization Expert"
+    goal: "Create compelling and informative data visualizations"
+    backstory: |
+      You are a data visualization expert who specializes in creating 
+      clear, compelling, and informative charts and graphs that effectively 
+      communicate data insights to various audiences. You understand the principles
+      of effective data visualization, including color theory, chart type selection,
+      and audience-appropriate design. You can transform complex data into
+      intuitive visual representations that tell compelling stories.
+
+tasks:
+  comparison:
+    description: "Tasks for comparative analysis between different groups, time periods, or categories"
+    tasks:
+      - name: "Data Comparison Analysis"
+        description: "Compare different groups, categories, or time periods in the data"
+        expected_output: "Detailed comparison with statistical significance and business implications"
+      
+      - name: "Performance Benchmarking"
+        description: "Benchmark performance against standards or previous periods"
+        expected_output: "Benchmark analysis with improvement recommendations"
+
+  trend:
+    description: "Tasks for analyzing temporal patterns and trends over time"
+    tasks:
+      - name: "Trend Analysis"
+        description: "Identify and analyze trends over time in the data"
+        expected_output: "Trend identification with forecasting and implications"
+      
+      - name: "Seasonal Pattern Detection"
+        description: "Detect seasonal or cyclical patterns in the data"
+        expected_output: "Seasonal analysis with pattern explanation"
+
+  correlation:
+    description: "Tasks for analyzing relationships and correlations between variables"
+    tasks:
+      - name: "Correlation Analysis"
+        description: "Analyze relationships between different variables"
+        expected_output: "Correlation matrix with significance testing and interpretation"
+      
+      - name: "Causal Relationship Investigation"
+        description: "Investigate potential causal relationships in the data"
+        expected_output: "Causal analysis with supporting evidence"
+
+  general:
+    description: "General data analysis tasks for exploration and insight generation"
+    tasks:
+      - name: "Exploratory Data Analysis"
+        description: "Perform comprehensive exploratory analysis of the dataset"
+        expected_output: "Key insights, patterns, and anomalies discovered"
+      
+      - name: "Summary Statistics"
+        description: "Generate comprehensive summary statistics and distributions"
+        expected_output: "Statistical summary with key metrics and distributions"
+      
+      - name: "Data Quality Assessment"
+        description: "Assess data quality, identify issues, and suggest improvements"
+        expected_output: "Quality report with issues and recommendations"
+
+data_summary_template: |
+  Dataset Summary:
+  - Shape: {rows} rows × {columns} columns
+  - Columns: {column_list}
+  - Data Types: {dtype_summary}
+  - Missing Values: {missing_summary}
+  - Sample Data:
+  {sample_data}
+
+result_formatting:
+  insights:
+    description: "Key insights extracted from the analysis"
+    format: "List of actionable insights with supporting evidence"
+  
+  recommendations:
+    description: "Business recommendations based on the analysis"
+    format: "Prioritized list of actionable recommendations"
+  
+  visualizations:
+    description: "Suggested visualizations for the data"
+    format: "List of chart types with rationale and data specifications"
+  
+  statistics:
+    description: "Key statistical findings"
+    format: "Important statistical measures with interpretations" 

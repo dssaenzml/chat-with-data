@@ -16,6 +16,7 @@ from agents.crew_agent import CrewDataAgent
 from agents.langgraph_orchestrator import LangGraphOrchestrator
 from agents.sql_agent import SQLAgent
 
+
 async def test_crew_agent():
     """Test CrewAI agent functionality"""
     print("🤖 Testing CrewAI Agent...")
@@ -46,6 +47,7 @@ async def test_crew_agent():
     except Exception as e:
         print(f"❌ CrewAI Agent test failed: {e}")
         return False
+
 
 async def test_langgraph_orchestrator():
     """Test LangGraph orchestrator functionality"""
@@ -80,6 +82,7 @@ async def test_langgraph_orchestrator():
         print(f"❌ LangGraph Orchestrator test failed: {e}")
         return False
 
+
 async def test_sql_agent():
     """Test SQL agent functionality"""
     print("🗄️  Testing SQL Agent...")
@@ -108,6 +111,7 @@ async def test_sql_agent():
         print(f"❌ SQL Agent test failed: {e}")
         return False
 
+
 async def test_langfuse_service():
     """Test Langfuse service functionality"""
     print("📊 Testing Langfuse Service...")
@@ -134,6 +138,7 @@ async def test_langfuse_service():
         print(f"⚠️ Langfuse test failed: {e}")
         print("   This is expected if Langfuse is not configured")
         return False
+
 
 async def main():
     """Run all agent tests"""
@@ -180,5 +185,6 @@ async def main():
     print("   3. Run: docker-compose up -d")
     print("   4. Access the app at http://localhost:3000")
 
+
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())

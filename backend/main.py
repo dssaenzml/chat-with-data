@@ -1,3 +1,9 @@
+# Suppress OpenTelemetry warnings about TracerProvider
+import warnings
+import logging
+warnings.filterwarnings("ignore", message="Overriding of current TracerProvider is not allowed")
+logging.getLogger("opentelemetry").setLevel(logging.ERROR)
+
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -36,6 +42,7 @@ database_service: DatabaseService = None
 chat_service: ChatService = None
 file_service: FileService = None
 vector_service: VectorService = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -90,6 +97,7 @@ async def lifespan(app: FastAPI):
     if vector_service:
         await vector_service.close()
 
+
 # Create FastAPI app
 app = FastAPI(
     title="Chat with Data API",
@@ -107,6 +115,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
@@ -121,6 +130,7 @@ async def health_check():
             "chat_service": "active"
         }
     )
+
 
 # File upload endpoint
 @app.post("/upload-file", response_model=FileUploadResponse)
@@ -145,6 +155,7 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"File upload failed: {str(e)}")
 
+
 # Database connection endpoint
 @app.post("/connect-database")
 async def connect_database(connection: DatabaseConnection):
@@ -162,6 +173,7 @@ async def connect_database(connection: DatabaseConnection):
             
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Connection error: {str(e)}")
+
 
 # Sample data loading endpoint
 @app.post("/load-sample-data")
@@ -184,6 +196,7 @@ async def load_sample_data(request: Dict[str, str]):
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to load sample data: {str(e)}")
+
 
 # Main chat endpoint
 @app.post("/chat", response_model=ChatResponse)
@@ -211,6 +224,7 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat processing failed: {str(e)}")
 
+
 # Chat history endpoints
 @app.get("/chat-history/{session_id}")
 async def get_chat_history(session_id: str):
@@ -225,6 +239,7 @@ async def get_chat_history(session_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve chat history: {str(e)}")
 
+
 @app.delete("/chat-history/{session_id}")
 async def clear_chat_history(session_id: str):
     """Clear chat history for a session"""
@@ -237,6 +252,7 @@ async def clear_chat_history(session_id: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear chat history: {str(e)}")
+
 
 # Data analysis endpoints
 @app.post("/analyze-data")
@@ -264,6 +280,7 @@ async def analyze_data(request: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Enhanced data analysis failed: {str(e)}")
 
+
 # SQL query endpoints
 @app.post("/execute-sql")
 async def execute_sql_query(request: Dict[str, Any]):
@@ -286,6 +303,7 @@ async def execute_sql_query(request: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"SQL execution failed: {str(e)}")
 
+
 # Vector search endpoints
 @app.post("/semantic-search")
 async def semantic_search(request: Dict[str, Any]):
@@ -305,6 +323,7 @@ async def semantic_search(request: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Semantic search failed: {str(e)}")
 
+
 # System metrics endpoint
 @app.get("/metrics")
 async def get_system_metrics():
@@ -323,6 +342,7 @@ async def get_system_metrics():
         
     except Exception as e:
         return {"error": f"Failed to get metrics: {str(e)}"}
+
 
 # WebSocket endpoint for real-time chat (optional enhancement)
 @app.websocket("/ws/{session_id}")
@@ -354,6 +374,7 @@ async def websocket_endpoint(websocket, session_id: str):
     finally:
         await websocket.close()
 
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
@@ -361,4 +382,4 @@ if __name__ == "__main__":
         port=8000,
         reload=True,
         log_level="info"
-    ) 
+    )

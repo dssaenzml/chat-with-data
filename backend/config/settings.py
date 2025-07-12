@@ -1,6 +1,12 @@
 from pydantic_settings import BaseSettings
 from typing import Optional, List
 import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load .env from project root
+load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / ".env")
+
 
 class Settings(BaseSettings):
     """Application settings"""
@@ -68,7 +74,7 @@ class Settings(BaseSettings):
     # File Upload Configuration
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     allowed_file_types: List[str] = ["csv", "xlsx", "xls", "json", "parquet"]
-    upload_directory: str = "/app/uploads"
+    upload_directory: str = "./uploads"
     
     # Security Configuration
     secret_key: str = "your-secret-key-here-change-in-production"
@@ -109,27 +115,27 @@ class Settings(BaseSettings):
     
     def get_mongodb_url(self) -> str:
         """Get MongoDB URL from environment"""
-        return os.getenv("MONGODB_ENDPOINT", "mongodb://admin:password123@chat-mongodb.orb.local:27017/chatdb?authSource=admin")
+        return os.getenv("MONGODB_ENDPOINT", "mongodb://localhost:27017/chatdb")
     
     def get_qdrant_url(self) -> str:
         """Get Qdrant URL from environment"""
-        return os.getenv("QDRANT_ENDPOINT", "http://chat-qdrant.orb.local:6333")
+        return os.getenv("QDRANT_ENDPOINT", "http://localhost:6333")
     
     def get_redis_url(self) -> str:
         """Get Redis URL from environment"""
-        return os.getenv("REDIS_ENDPOINT", "redis://chat-redis.orb.local:6379")
+        return os.getenv("REDIS_ENDPOINT", "redis://localhost:6379")
     
     def get_postgres_url(self) -> str:
         """Get PostgreSQL URL from environment"""
-        return os.getenv("POSTGRES_ENDPOINT", "postgresql://postgres:postgres123@chat-postgres.orb.local:5432/sampledb")
+        return os.getenv("POSTGRES_ENDPOINT", "postgresql://postgres:postgres123@localhost:5432/sampledb")
     
     def get_minio_endpoint(self) -> str:
         """Get MinIO endpoint from environment"""
-        return os.getenv("MINIO_ENDPOINT", "chat-minio.orb.local:9000")
+        return os.getenv("MINIO_ENDPOINT", "localhost:9000")
     
     def get_langfuse_host(self) -> str:
         """Get Langfuse host URL from environment"""
-        return os.getenv("LANGFUSE_ENDPOINT", "http://chat-langfuse.orb.local:3001")
+        return os.getenv("LANGFUSE_ENDPOINT", "http://localhost:3001")
     
     def get_celery_urls(self) -> tuple[str, str]:
         """Get Celery broker and result backend URLs"""
@@ -181,4 +187,4 @@ def get_environment_settings() -> Settings:
     elif env == "testing":
         return TestingSettings()
     else:
-        return DevelopmentSettings() 
+        return DevelopmentSettings()

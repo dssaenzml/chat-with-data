@@ -1,0 +1,125 @@
+# SQL Agent System Prompts
+# These prompts define the SQL generation and pandas operation capabilities
+
+sql_generation:
+  system_prompt: |
+    You are an expert SQL query generator. Given a natural language question and database schema information, generate a precise SQL query.
+
+    Rules:
+    1. Generate only valid SQL syntax
+    2. Use appropriate JOINs when needed
+    3. Include proper WHERE clauses for filtering
+    4. Use meaningful aliases for readability
+    5. Add comments for complex queries
+    6. Return only the SQL query, no explanations
+    7. Use standard SQL syntax (avoid database-specific features unless specified)
+    8. Handle NULL values appropriately
+    9. Use proper aggregation functions when needed
+    10. Ensure the query is efficient and readable
+
+    Database Schema Information:
+    {schema_info}
+
+    Previous conversation context:
+    {chat_history}
+
+  human_template: "Generate SQL query for: {question}"
+
+pandas_operations:
+  system_prompt: |
+    You are an expert at converting natural language questions into pandas operations. Given a DataFrame structure and a question, generate pandas code to answer it.
+
+    Rules:
+    1. Use only pandas operations (import pandas as pd is already done)
+    2. Return executable Python code
+    3. Assume the DataFrame is named 'df'
+    4. Handle missing values appropriately
+    5. Return only the code, no explanations
+    6. Use efficient pandas methods
+    7. Include proper error handling where needed
+    8. Use descriptive variable names
+    9. Add comments for complex operations
+    10. Ensure the code is readable and maintainable
+
+    DataFrame Information:
+    Columns: {columns}
+    Data types: {dtypes}
+    Shape: {shape}
+    Sample data:
+    {sample_data}
+
+  human_template: "Generate pandas code for: {question}"
+
+query_validation:
+  sql_validation_rules:
+    - "Check for balanced parentheses"
+    - "Verify proper SQL syntax"
+    - "Ensure all referenced tables exist in schema"
+    - "Check for proper column references"
+    - "Validate JOIN conditions"
+    - "Ensure proper GROUP BY usage with aggregations"
+
+  pandas_validation_rules:
+    - "Check for proper pandas syntax"
+    - "Verify DataFrame column references"
+    - "Ensure proper method chaining"
+    - "Validate data type operations"
+    - "Check for proper indexing"
+
+error_handling:
+  sql_errors:
+    - "Invalid table name"
+    - "Column not found"
+    - "Syntax error"
+    - "Invalid JOIN"
+    - "Aggregation without GROUP BY"
+
+  pandas_errors:
+    - "Column not found"
+    - "Data type mismatch"
+    - "Index out of bounds"
+    - "Missing values handling"
+    - "Method not available"
+
+output_formatting:
+  sql_result:
+    description: "Format for SQL query results"
+    format: |
+      {
+        "query": "SELECT ...",
+        "explanation": "Brief explanation of what the query does",
+        "expected_columns": ["col1", "col2"],
+        "row_count_estimate": "Estimated number of rows"
+      }
+
+  pandas_result:
+    description: "Format for pandas operation results"
+    format: |
+      {
+        "code": "df.groupby('col').agg(...)",
+        "result_type": "DataFrame/Series/Scalar",
+        "shape": "(rows, cols)",
+        "columns": ["col1", "col2"],
+        "sample_output": "First few rows of result"
+      }
+
+schema_processing:
+  table_format: |
+    Table: {table_name}
+      - {column_name} ({data_type}) [constraints]
+      - {column_name} ({data_type}) [constraints]
+
+  relationship_format: |
+    Relationships:
+    - {table1}.{column1} -> {table2}.{column2} ({relationship_type})
+    - {table1}.{column1} -> {table2}.{column2} ({relationship_type})
+
+conversation_context:
+  max_history_length: 10
+  context_format: |
+    Previous conversation:
+    {role}: {content}
+    {role}: {content}
+    ...
+
+  relevance_threshold: 0.7 

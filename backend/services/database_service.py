@@ -1,17 +1,15 @@
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.errors import ConnectionFailure, OperationFailure
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import logging
-from bson import ObjectId
-import json
 
 from config.settings import get_settings
 from models.schemas import ChatMessage, Session
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
 
 class DatabaseService:
     """MongoDB database service for chat history and session management"""
@@ -25,7 +23,8 @@ class DatabaseService:
     async def initialize(self):
         """Initialize database connection"""
         try:
-            self.client = AsyncIOMotorClient(settings.mongodb_url)
+            mongodb_url = settings.get_mongodb_url()
+            self.client = AsyncIOMotorClient(mongodb_url)
             self.database = self.client[settings.mongodb_database]
             
             # Test connection
@@ -38,9 +37,10 @@ class DatabaseService:
             logger.info("✅ MongoDB connection established")
             
         except Exception as e:
-            logger.error(f"❌ Failed to connect to MongoDB: {e}")
+            logger.warning(f"⚠️ MongoDB connection failed: {e}")
+            logger.info("🔄 Running in development mode without MongoDB - some features may be limited")
             self.is_connected = False
-            raise
+            # Don't raise the exception - allow the app to start without MongoDB
     
     async def _create_indexes(self):
         """Create database indexes for performance"""
@@ -314,4 +314,4 @@ class DatabaseService:
             
         except Exception as e:
             logger.error(f"❌ Query execution failed: {e}")
-            raise 
+            raise

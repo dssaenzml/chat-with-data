@@ -12,15 +12,18 @@ from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 
 from config.settings import get_settings
+from services.prompt_service import get_prompt_service
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
 
 class SQLAgent:
     """SQL generation agent using LangGraph"""
     
     def __init__(self):
         self.llm = None
+        self.prompt_service = get_prompt_service()
         self._initialize_model()
         self._setup_prompts()
     
@@ -41,8 +44,16 @@ class SQLAgent:
     
     def _setup_prompts(self):
         """Setup prompt templates for SQL generation"""
-        self.sql_prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an expert SQL query generator. Given a natural language question and database schema information, generate a precise SQL query.
+        # Get prompts from prompt service
+        sql_system_prompt = self.prompt_service.get_prompt("sql_agent", "sql_generation", "system_prompt")
+        sql_human_template = self.prompt_service.get_prompt("sql_agent", "sql_generation", "human_template")
+        
+        pandas_system_prompt = self.prompt_service.get_prompt("sql_agent", "pandas_operations", "system_prompt")
+        pandas_human_template = self.prompt_service.get_prompt("sql_agent", "pandas_operations", "human_template")
+        
+        # Use default prompts if not found
+        if not sql_system_prompt:
+            sql_system_prompt = """You are an expert SQL query generator. Given a natural language question and database schema information, generate a precise SQL query.
 
 Rules:
 1. Generate only valid SQL syntax
@@ -56,12 +67,13 @@ Database Schema Information:
 {schema_info}
 
 Previous conversation context:
-{chat_history}"""),
-            ("human", "Generate SQL query for: {question}")
-        ])
+{chat_history}"""
         
-        self.pandas_prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an expert at converting natural language questions into pandas operations. Given a DataFrame structure and a question, generate pandas code to answer it.
+        if not sql_human_template:
+            sql_human_template = "Generate SQL query for: {question}"
+        
+        if not pandas_system_prompt:
+            pandas_system_prompt = """You are an expert at converting natural language questions into pandas operations. Given a DataFrame structure and a question, generate pandas code to answer it.
 
 Rules:
 1. Use only pandas operations
@@ -75,8 +87,19 @@ Columns: {columns}
 Data types: {dtypes}
 Shape: {shape}
 Sample data:
-{sample_data}"""),
-            ("human", "Generate pandas code for: {question}")
+{sample_data}"""
+        
+        if not pandas_human_template:
+            pandas_human_template = "Generate pandas code for: {question}"
+        
+        self.sql_prompt = ChatPromptTemplate.from_messages([
+            ("system", sql_system_prompt),
+            ("human", sql_human_template)
+        ])
+        
+        self.pandas_prompt = ChatPromptTemplate.from_messages([
+            ("system", pandas_system_prompt),
+            ("human", pandas_human_template)
         ])
     
     async def generate_sql_query(self, 
@@ -399,4 +422,4 @@ Sample data:
             return {
                 "message": f"Error processing request: {str(e)}",
                 "suggestions": ["Try a different query"]
-            } 
+            }

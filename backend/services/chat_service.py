@@ -1,8 +1,6 @@
-import asyncio
 from typing import Dict, Any, List, Optional
 import logging
 from datetime import datetime
-import json
 
 from services.database_service import DatabaseService
 from services.vector_service import VectorService
@@ -11,10 +9,9 @@ from agents.sql_agent import SQLAgent
 from agents.crew_agent import CrewDataAgent
 from agents.langgraph_orchestrator import LangGraphOrchestrator
 from models.schemas import ChatMessage
-from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
-settings = get_settings()
+
 
 class ChatService:
     """Main chat service that orchestrates all agents and services"""
@@ -30,10 +27,7 @@ class ChatService:
         # Initialize agents
         self.sql_agent = SQLAgent()
         self.crew_agent = CrewDataAgent()
-        self.langgraph_orchestrator = LangGraphOrchestrator(
-            crew_agent=self.crew_agent,
-            sql_agent=self.sql_agent
-        )
+        self.langgraph_orchestrator = LangGraphOrchestrator()
         
         # Query intent classification patterns
         self.intent_patterns = {
@@ -82,7 +76,8 @@ class ChatService:
                     intent=intent,
                     data_source=data_source,
                     chat_history=chat_history,
-                    similar_queries=similar_queries
+                    similar_queries=similar_queries,
+                    session_id=session_id
                 )
             else:
                 response = await self._process_without_data_source(message, intent)
@@ -138,12 +133,13 @@ class ChatService:
                                       intent: str,
                                       data_source: Dict[str, Any],
                                       chat_history: List[Dict[str, Any]],
-                                      similar_queries: List[Dict[str, Any]]) -> Dict[str, Any]:
+                                      similar_queries: List[Dict[str, Any]],
+                                      session_id: str) -> Dict[str, Any]:
         """Process message with connected data source"""
         try:
             # Determine processing strategy based on data source type
             if "file_id" in data_source:
-                return await self._process_file_query(message, intent, data_source, chat_history)
+                return await self._process_file_query(message, intent, data_source, chat_history, session_id)
             elif "type" in data_source and data_source["type"] in ["postgresql", "mysql", "sqlite"]:
                 return await self._process_database_query(message, intent, data_source, chat_history)
             else:
@@ -160,7 +156,8 @@ class ChatService:
                                 message: str,
                                 intent: str,
                                 data_source: Dict[str, Any],
-                                chat_history: List[Dict[str, Any]]) -> Dict[str, Any]:
+                                chat_history: List[Dict[str, Any]],
+                                session_id: str = "default") -> Dict[str, Any]:
         """Process query against uploaded file"""
         try:
             file_id = data_source.get("file_id")
@@ -173,11 +170,10 @@ class ChatService:
                 return {"message": "Could not load the specified file."}
             
             # Use LangGraph orchestrator to route to appropriate agents
-            return await self.langgraph_orchestrator.process_query(
+            return await self.langgraph_orchestrator.analyze(
                 query=message,
                 data_source={"file_data": df, "file_id": file_id},
-                chat_history=chat_history,
-                intent=intent
+                session_id=session_id
             )
                 
         except Exception as e:
@@ -258,11 +254,10 @@ class ChatService:
             
             # Use LangGraph orchestrator with CrewAI agents
             logger.info("🤖 Using CrewAI + LangGraph for data analysis")
-            return await self.langgraph_orchestrator.process_query(
+            return await self.langgraph_orchestrator.analyze(
                 query=query,
                 data_source={"file_data": df, "file_id": data_source["file_id"]},
-                chat_history=[],
-                intent=analysis_type
+                session_id="analysis"
             )
             
         except Exception as e:
@@ -314,4 +309,4 @@ class ChatService:
             "Show me similar data patterns"
         ])
         
-        return suggestions[:3]  # Return top 3 suggestions 
+        return suggestions[:3]
