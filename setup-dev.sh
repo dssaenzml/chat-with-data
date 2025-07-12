@@ -7,31 +7,42 @@ set -e
 
 echo "🚀 Setting up Chat with Data Development Environment"
 echo "📋 This script will:"
-echo "   • Create Python 3.12 conda environments"
+echo "   • Create Python 3.12 virtual environments"
 echo "   • Install UV package manager"
 echo "   • Set up backend (CrewAI + LangGraph)"
 echo "   • Set up frontend (Streamlit)"
 echo ""
 
-# Check if conda is installed
-if ! command -v conda &> /dev/null; then
-    echo "❌ Conda is not installed. Please install Miniconda or Anaconda first:"
-    echo "   https://docs.conda.io/en/latest/miniconda.html"
+# Check if Python 3.12 is available
+if ! command -v python3.12 &> /dev/null; then
+    echo "❌ Python 3.12 is not installed. Please install Python 3.12 first:"
+    echo "   https://www.python.org/downloads/"
+    echo "   Or use pyenv: pyenv install 3.12.0"
     exit 1
 fi
 
-# Function to create conda environment
+# Check if UV is installed globally
+if ! command -v uv &> /dev/null; then
+    echo "📦 Installing UV package manager globally..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    echo "✅ UV installed globally"
+    echo "🔄 Please restart your terminal or run: source ~/.bashrc"
+    echo "   Then run this script again."
+    exit 0
+fi
+
+# Function to create virtual environment
 create_env() {
     local env_name=$1
     local description=$2
     
-    echo "🐍 Creating conda environment: $env_name"
-    if conda info --envs | grep -q "^$env_name "; then
+    echo "🐍 Creating virtual environment: $env_name"
+    if [ -d "$env_name" ]; then
         echo "⚠️  Environment $env_name already exists. Removing..."
-        conda env remove -n $env_name -y
+        rm -rf "$env_name"
     fi
     
-    conda create -n $env_name python=3.12 -y
+    python3.12 -m venv "$env_name"
     echo "✅ Created $env_name ($description)"
 }
 
@@ -41,27 +52,15 @@ create_env "chat-backend" "CrewAI + LangGraph Backend"
 # Create frontend environment  
 create_env "chat-frontend" "Streamlit Frontend"
 
-# Install UV in backend environment
-echo ""
-echo "📦 Installing UV package manager in backend environment..."
-conda run -n chat-backend pip install uv
-echo "✅ UV installed in chat-backend"
-
-# Install UV in frontend environment
-echo ""
-echo "📦 Installing UV package manager in frontend environment..."
-conda run -n chat-frontend pip install uv
-echo "✅ UV installed in chat-frontend"
-
 # Install backend dependencies
 echo ""
 echo "🔧 Installing backend dependencies (CrewAI + LangGraph)..."
 cd backend
-if conda run -n chat-backend uv pip install -e ".[dev]"; then
+if uv pip install -e ".[dev]"; then
     echo "✅ Backend dependencies installed successfully"
 else
     echo "⚠️  Backend dependency installation encountered issues"
-    echo "💡 Try running manually: conda activate chat-backend && uv pip install -e '.[dev]'"
+    echo "💡 Try running manually: uv pip install -e '.[dev]'"
 fi
 cd ..
 
@@ -69,11 +68,11 @@ cd ..
 echo ""
 echo "🔧 Installing frontend dependencies..."
 cd frontend
-if conda run -n chat-frontend uv pip install -e ".[dev]"; then
+if uv pip install -e ".[dev]"; then
     echo "✅ Frontend dependencies installed successfully"
 else
     echo "⚠️  Frontend dependency installation encountered issues"
-    echo "💡 Try running manually: conda activate chat-frontend && uv pip install -e '.[dev]'"
+    echo "💡 Try running manually: uv pip install -e '.[dev]'"
 fi
 cd ..
 
@@ -83,12 +82,10 @@ echo ""
 echo "🚀 To start development:"
 echo ""
 echo "Backend (Terminal 1):"
-echo "  conda activate chat-backend"
 echo "  cd backend"
 echo "  uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000"
 echo ""
 echo "Frontend (Terminal 2):"
-echo "  conda activate chat-frontend"
 echo "  cd frontend"
 echo "  uv run streamlit run streamlit_app.py --server.port 3000"
 echo ""

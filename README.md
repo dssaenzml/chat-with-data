@@ -142,9 +142,45 @@ graph TB
 
 ### Prerequisites
 
-- **Docker & Docker Compose** - [Install Docker](https://docs.docker.com/get-docker/)
+- **Python 3.12** - [Download Python](https://www.python.org/downloads/) or use pyenv
 - **Git** - Version control system
 - **OpenAI API Key** - For AI-powered analysis
+
+### Development Setup (Recommended)
+
+For development and local testing:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/yourusername/chat-with-data.git
+cd chat-with-data
+
+# 2. Run the automated setup script
+chmod +x setup-dev.sh
+./setup-dev.sh
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with your OpenAI API key
+
+# 4. Start the application
+# Terminal 1 - Backend
+cd backend
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Terminal 2 - Frontend  
+cd frontend
+uv run streamlit run streamlit_app.py --server.port 3000
+```
+
+**Access the application:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+### Production Setup (Docker)
+
+For production deployment with Docker:
 
 ### 1. Clone the Repository
 
@@ -157,7 +193,7 @@ cd chat-with-data
 
 ```bash
 # Copy environment template
-cp env.example .env
+cp .env.example .env
 
 # Edit .env file with your API keys (this file is git-ignored for security)
 nano .env
@@ -628,6 +664,91 @@ uv run pytest tests/performance/
 - 📊 **Parallel Processing** - Concurrent agent execution
 - 🔧 **Auto-scaling** - Dynamic agent resource allocation
 
+## 🎯 Prompt Management System
+
+The Chat with Data platform includes a sophisticated prompt management system that allows you to customize AI agent behaviors and responses.
+
+### Overview
+
+The prompt management system provides:
+- **YAML-based prompts** for easy editing and version control
+- **Langfuse integration** for dynamic prompt updates in production
+- **Intelligent fallback** from Langfuse → local YAML → hardcoded defaults
+- **Caching system** for performance optimization
+
+### Prompt Files
+
+```
+backend/prompts/
+├── crew_agent_prompts.yaml      # CrewAI agent system prompts
+├── sql_agent_prompts.yaml       # SQL generation prompts  
+└── langgraph_prompts.yaml       # Workflow orchestration prompts
+```
+
+### Customizing Prompts
+
+#### Local Development
+```bash
+# Edit prompts in YAML files
+nano backend/prompts/crew_agent_prompts.yaml
+
+# Restart the backend to load changes
+cd backend
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### Production with Langfuse
+```python
+from services.prompt_service import get_prompt_service
+
+# Sync local prompts to Langfuse
+prompt_service = get_prompt_service()
+results = prompt_service.sync_prompts_to_langfuse()
+
+# Update prompts dynamically
+prompt_service.update_prompt_in_langfuse(
+    agent_type="crew_agent",
+    prompt_key="agents", 
+    prompt_value="New agent backstory...",
+    sub_key="data_analyst.backstory"
+)
+```
+
+### Prompt Structure
+
+Each agent type has specialized prompts:
+
+#### CrewAI Agents
+- **Role definitions** - Agent personalities and expertise
+- **Task descriptions** - Analysis workflow instructions
+- **Output formatting** - Response structure guidelines
+
+#### SQL Agent
+- **Query generation** - Natural language to SQL conversion
+- **Pandas operations** - DataFrame manipulation instructions
+- **Validation rules** - Query and code validation
+
+#### LangGraph Orchestrator
+- **Intent analysis** - Query understanding and classification
+- **Routing logic** - Analysis path determination
+- **Synthesis prompts** - Result combination and formatting
+
+### Testing Prompts
+
+```bash
+# Test the prompt management system
+cd backend
+python test_prompts.py
+```
+
+This will verify:
+- YAML file loading
+- Agent initialization with prompts
+- Prompt caching functionality
+- Cache clearing operations
+
+For detailed documentation, see [backend/prompts/README.md](backend/prompts/README.md).
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
@@ -660,5 +781,5 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **Python 3.12 Team** - For the performance improvements and new features
 
 ---
-
+`
 *Made with ❤️ by [Diego Saenz](mailto:dosaenz28@gmail.com)*
