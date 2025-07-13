@@ -4,7 +4,7 @@ import json
 from fastapi import UploadFile
 from typing import Dict, Any, Optional
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import aiofiles
 import chardet
 from pathlib import Path
@@ -250,7 +250,6 @@ class FileService:
     def _generate_sales_data(self) -> pd.DataFrame:
         """Generate sample sales data"""
         import random
-        from datetime import timedelta
         
         base_date = datetime.now() - timedelta(days=365)
         

@@ -12,7 +12,7 @@
 ## 🌟 Overview
 
 **Chat with Data** is a next-generation platform that revolutionizes data analysis through intelligent multi-agent conversations. Upload CSV, Excel, or JSON files and engage with your data using natural language, powered by CrewAI's collaborative agents and LangGraph's sophisticated workflow orchestration.
-
+`
 ### ✨ Key Features
 
 - 🗣️ **Natural Language Queries** - Ask complex questions about your data in plain English
@@ -142,7 +142,7 @@ graph TB
 
 ### Prerequisites
 
-- **Python 3.12** - [Download Python](https://www.python.org/downloads/) or use pyenv
+- **Python 3.12** - Will be automatically installed via pyenv if not available
 - **Git** - Version control system
 - **OpenAI API Key** - For AI-powered analysis
 
@@ -155,7 +155,7 @@ For development and local testing:
 git clone https://github.com/yourusername/chat-with-data.git
 cd chat-with-data
 
-# 2. Run the automated setup script
+# 2. Run the automated setup script (installs Python 3.12 if needed)
 chmod +x setup-dev.sh
 ./setup-dev.sh
 
@@ -177,6 +177,8 @@ uv run streamlit run streamlit_app.py --server.port 3000
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
+
+> **🔧 Development Mode**: Both frontend and backend automatically use `localhost` URLs for local development. The setup script creates isolated Python 3.12 environments with UV package management for ultra-fast dependency resolution. Frontend runs on port 3000, backend on port 8000.
 
 ### Production Setup (Docker)
 
@@ -251,6 +253,8 @@ docker-compose logs -f
 - **Web Interface**: http://localhost:8501
 - **API Documentation**: http://localhost:8000/docs
 - **Langfuse Dashboard**: http://localhost:3001 (LLM Observability & Analytics)
+
+> **🐳 Production Mode**: In Docker production mode, services use internal Docker network URLs (`chat-backend.orb.local:8000`, `chat-frontend.orb.local:8501`) for inter-service communication, while external access uses `localhost` ports.
 
 ## 📋 Usage Examples
 
@@ -348,6 +352,8 @@ cd frontend
 uv run streamlit run streamlit_app.py --server.port 8501
 ```
 
+> **🔧 Development Mode**: Both services automatically load environment variables from the project root `.env` file and use `localhost` URLs for communication. The frontend will connect to `http://localhost:8000` for the backend API.
+
 ### Why Python 3.12? 🐍
 
 **Performance Improvements:**
@@ -430,6 +436,19 @@ uv run streamlit run app.py           # Start frontend with hot reload
 
 ## 🐳 Production Deployment
 
+### Environment Configuration
+
+**Development vs Production URLs:**
+
+| Environment | Backend URL | Frontend URL | Description |
+|-------------|-------------|--------------|-------------|
+| **Development** | `http://localhost:8000` | `http://localhost:8501` | Local development with direct localhost access |
+| **Production** | `http://chat-backend.orb.local:8000` | `http://chat-frontend.orb.local:8501` | Docker internal network communication |
+
+**Configuration Files:**
+- **Development**: `.env` file in project root with `localhost` URLs
+- **Production**: Docker Compose uses internal Docker network URLs
+
 ### Build and Deploy
 
 ```bash
@@ -452,18 +471,18 @@ docker-compose logs -f
 
 ### Service Configuration
 
-| Service | Port | Description |
-|---------|------|-------------|
-| Frontend | 8501 | Streamlit web interface |
-| Backend | 8000 | FastAPI REST API with LangGraph orchestration |
-| MongoDB | 27017 | Document database for chat history |
-| **PostgreSQL** | **5432** | **Relational database (shared: app data + Langfuse)** |
-| **Redis** | **6379** | **Cache and session store (shared: app + Langfuse)** |
-| Qdrant | 6333 | Vector database for semantic search |
-| **MinIO** | **9090** | **Object storage (shared: uploads + Langfuse)** |
-| **Langfuse Web** | **3001** | **Self-hosted LLM observability dashboard** |
-| Langfuse Worker | 3030 | Langfuse background processing |
-| ClickHouse | 8124 | Langfuse analytics database |
+| Service | Port | External Access | Internal Docker URL | Description |
+|---------|------|-----------------|-------------------|-------------|
+| Frontend | 8501 | `http://localhost:8501` | `http://chat-frontend.orb.local:8501` | Streamlit web interface |
+| Backend | 8000 | `http://localhost:8000` | `http://chat-backend.orb.local:8000` | FastAPI REST API with LangGraph orchestration |
+| MongoDB | 27017 | `localhost:27017` | `chat-mongodb.orb.local:27017` | Document database for chat history |
+| **PostgreSQL** | **5432** | **`localhost:5432`** | **`chat-postgres.orb.local:5432`** | **Relational database (shared: app data + Langfuse)** |
+| **Redis** | **6379** | **`localhost:6379`** | **`chat-redis.orb.local:6379`** | **Cache and session store (shared: app + Langfuse)** |
+| Qdrant | 6333 | `localhost:6333` | `chat-qdrant.orb.local:6333` | Vector database for semantic search |
+| **MinIO** | **9090** | **`localhost:9090`** | **`chat-minio.orb.local:9000`** | **Object storage (shared: uploads + Langfuse)** |
+| **Langfuse Web** | **3001** | **`http://localhost:3001`** | **`http://chat-langfuse.orb.local:3000`** | **Self-hosted LLM observability dashboard** |
+| Langfuse Worker | 3030 | `localhost:3030` | `langfuse-worker.orb.local:3030` | Langfuse background processing |
+| ClickHouse | 8124 | `localhost:8124` | `chat-clickhouse.orb.local:8123` | Langfuse analytics database |
 
 ### Docker Compose Profiles
 

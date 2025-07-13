@@ -1,6 +1,11 @@
 from pydantic_settings import BaseSettings
 from typing import Optional, List
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from project root
+load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / ".env")
 
 class FrontendSettings(BaseSettings):
     """Frontend application settings"""
@@ -54,6 +59,10 @@ class FrontendSettings(BaseSettings):
     
     def get_backend_url(self) -> str:
         """Get backend URL from environment"""
+        # For local development, use localhost
+        if self.environment == "development":
+            return os.getenv("BACKEND_ENDPOINT", "http://localhost:8000")
+        # For production/Docker, use the configured endpoint
         return os.getenv("BACKEND_ENDPOINT", "http://chat-backend.orb.local:8000")
     
     class Config:
